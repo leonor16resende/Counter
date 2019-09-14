@@ -41,7 +41,6 @@ public class CustomAdapter extends ArrayAdapter<AppCounter> {
         listItem.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.i("Item clicked", "NO. " + position);
                 MainActivity.goToCounter(currentCounter.getTitle(), currentCounter.getNumber());
             }
         });
