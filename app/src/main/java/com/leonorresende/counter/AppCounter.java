@@ -1,6 +1,6 @@
 package com.leonorresende.counter;
 
-public class AppCounter {
+public class AppCounter implements java.io.Serializable {
     private String title;
     private int number;
 
@@ -23,4 +23,6 @@ public class AppCounter {
     public void setNumber(int newNumber) {
         this.number = newNumber;
     }
+    public void decrementNumber() { number--;}
+    public void incrementNumber() { number++;}
 }

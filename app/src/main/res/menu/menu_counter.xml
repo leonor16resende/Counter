@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/edit_title" android:title="@string/edit_title" />
+    <item android:id="@+id/delete_counter" android:title="@string/delete_counter" />
+</menu>

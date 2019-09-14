@@ -30,19 +30,21 @@ public class CustomAdapter extends ArrayAdapter<AppCounter> {
         if(listItem == null)
             listItem = LayoutInflater.from(thisContext).inflate(R.layout.row_counter, parent,false);
 
-        listItem.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.i("Item clicked", "NO. " + position);
-            }
-        });
 
-        AppCounter currentCounter = countersData.get(position);
+        final AppCounter currentCounter = countersData.get(position);
         TextView titleTextView = listItem.findViewById(R.id.titleTextView);
         titleTextView.setText(currentCounter.getTitle());
 
         Button numberButton = listItem.findViewById(R.id.numberButton);
         numberButton.setText(String.valueOf(currentCounter.getNumber()));
+
+        listItem.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i("Item clicked", "NO. " + position);
+                MainActivity.goToCounter(currentCounter.getTitle(), currentCounter.getNumber());
+            }
+        });
 
 
         return listItem;

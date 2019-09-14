@@ -1,10 +1,19 @@
 package com.leonorresende.counter;
 
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.Resources;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
+import android.location.Location;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.textfield.TextInputLayout;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,12 +21,15 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -29,6 +41,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     ArrayList<AppCounter> counters;
     CustomAdapter adapter;
 
+    private static Context appContext;
+
+    SQLiteDatabase myDatabase;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,14 +53,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setSupportActionBar(toolbar);
         setTitle(R.string.your_counters);
 
+        appContext = this;
+
+        myDatabase = this.openOrCreateDatabase("Counters", MODE_PRIVATE, null);
+
         countersListView = (ListView) findViewById(R.id.list);
-        counters = new ArrayList<AppCounter>();
-        counters.add(new AppCounter("first counter", 0));
+
+        counters = new ArrayList<>();
 
         adapter = new CustomAdapter(this, counters);
         countersListView.setAdapter(adapter);
 
-        //countersListView.setOnItemClickListener(this);
+        myDatabase.execSQL("CREATE TABLE IF NOT EXISTS countersData (id INTEGER PRIMARY KEY, title VARCHAR, number INTEGER)");
+
+        loadCounters();
 
 
         FloatingActionButton fab = findViewById(R.id.fab);
@@ -52,18 +74,47 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+    private void loadCounters() {
+
+        Cursor c = myDatabase.rawQuery("SELECT * FROM countersData", null);
+        int titleIndex = c.getColumnIndex("title");
+        int numberIndex = c.getColumnIndex("number");
+
+        if (c.moveToFirst()) {
+            counters.clear();
+
+            do {
+                AppCounter newCounter = new AppCounter(c.getString(titleIndex), c.getInt(numberIndex));
+                counters.add(newCounter);
+            }
+            while (c.moveToNext());
+
+            adapter.notifyDataSetChanged();
+        }
+
+    }
+
     private int makeNewCounter(String counterTitle, int counterNumber) {
         AppCounter newCounter = new AppCounter(counterTitle, counterNumber);
         counters.add(newCounter);
         adapter.notifyDataSetChanged();
+
+        String sqlStatement = "INSERT INTO countersData (title, number) VALUES (?, ?)";
+        SQLiteStatement statement = myDatabase.compileStatement(sqlStatement);
+        statement.bindString(1, counterTitle);
+        statement.bindLong(2, counterNumber);
+        statement.execute();
+
         return counters.size() - 1;
     }
 
-    public void goToCounter(int index) {
-        String title = counters.get(index).getTitle();
-        int number = counters.get(index).getNumber();
-        Toast.makeText(this, "Title: " + title + ", Number: " + number, Toast.LENGTH_SHORT).show();
+    public static void goToCounter(String title, int number) {
+        Intent intent = new Intent(appContext, CounterActivity.class);
+        intent.putExtra("title", title);
+        intent.putExtra("number", number);
+        appContext.startActivity(intent);
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -91,16 +142,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View view) {
         if (view.getId() == R.id.fab) {
             final EditText titleInput = new EditText(MainActivity.this);
+            TextInputLayout textInputLayout = new TextInputLayout(MainActivity.this);
+
+            FrameLayout container = new FrameLayout(MainActivity.this);
+            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+            int left_margin = dpToPx(20, getResources());
+            int top_margin = dpToPx(0, getResources());
+            int right_margin = dpToPx(20, getResources());
+            int bottom_margin = dpToPx(4, getResources());
+            params.setMargins(left_margin, top_margin, right_margin, bottom_margin);
+
+            textInputLayout.setLayoutParams(params);
+
+            textInputLayout.addView(titleInput);
+            container.addView(textInputLayout);
+
+
 
             new AlertDialog.Builder(this)
                     .setTitle("New Counter")
-                    .setMessage("Give it a title")
-                    .setView(titleInput)
+                    .setMessage("Give it a title!")
+                    .setView(container)
                     .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-                            int index = makeNewCounter(titleInput.getText().toString(), 0);
-                            goToCounter(index);
+                            makeNewCounter(titleInput.getText().toString(), 0);
+                            goToCounter(titleInput.getText().toString(), 0);
 
                         }
                     })
@@ -109,10 +177,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    /*@Override
-    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-        Log.i("Item clicked", "NO. " + i);
-        goToCounter(i);
-    }*/
+    public static int dpToPx(float dp, Resources resources) {
+        float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, resources.getDisplayMetrics());
+        return (int) px;
+    }
 
 }
