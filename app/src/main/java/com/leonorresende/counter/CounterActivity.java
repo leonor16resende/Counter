@@ -128,15 +128,22 @@ public class CounterActivity extends AppCompatActivity {
         titleInput.setSingleLine();
 
         titleInput.setText(title);
+
+        /*
+         *
+         * The code regarding the layout of the EditText was taken from
+         * https://stackoverflow.com/questions/27774414/add-bigger-margin-to-edittext-in-android-alertdialog
+         *
+         * */
         final TextInputLayout textInputLayout = new TextInputLayout(CounterActivity.this);
 
         FrameLayout container = new FrameLayout(CounterActivity.this);
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
-        int left_margin = dpToPx(20, getResources());
-        int top_margin = dpToPx(0, getResources());
-        int right_margin = dpToPx(20, getResources());
-        int bottom_margin = dpToPx(4, getResources());
+        int left_margin = MainActivity.dpToPx(20, getResources());
+        int top_margin = MainActivity.dpToPx(0, getResources());
+        int right_margin = MainActivity.dpToPx(20, getResources());
+        int bottom_margin = MainActivity.dpToPx(4, getResources());
         params.setMargins(left_margin, top_margin, right_margin, bottom_margin);
 
         textInputLayout.setLayoutParams(params);
@@ -188,11 +195,6 @@ public class CounterActivity extends AppCompatActivity {
             Toast.makeText(CounterActivity.this, "Couldn't save your title", Toast.LENGTH_LONG).show();
         }
 
-    }
-
-    public static int dpToPx(float dp, Resources resources) {
-        float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, resources.getDisplayMetrics());
-        return (int) px;
     }
 
 }

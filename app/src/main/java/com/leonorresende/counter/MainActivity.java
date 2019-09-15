@@ -145,6 +145,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             });
 
+            /*
+             *
+             * The code regarding the layout of the EditText was taken from
+             * https://stackoverflow.com/questions/27774414/add-bigger-margin-to-edittext-in-android-alertdialog
+             *
+             * */
             TextInputLayout textInputLayout = new TextInputLayout(MainActivity.this);
 
             FrameLayout container = new FrameLayout(MainActivity.this);
@@ -182,6 +188,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    /*
+    *
+    * This code was taken from
+    * https://stackoverflow.com/questions/27774414/add-bigger-margin-to-edittext-in-android-alertdialog
+    *
+    * */
     public static int dpToPx(float dp, Resources resources) {
         float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, resources.getDisplayMetrics());
         return (int) px;
