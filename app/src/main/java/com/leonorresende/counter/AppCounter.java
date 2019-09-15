@@ -16,13 +16,4 @@ public class AppCounter implements java.io.Serializable {
     public int getNumber() {
         return this.number;
     }
-
-    public void setTitle(String newTitle) {
-        this.title = newTitle;
-    }
-    public void setNumber(int newNumber) {
-        this.number = newNumber;
-    }
-    public void decrementNumber() { number--;}
-    public void incrementNumber() { number++;}
 }
