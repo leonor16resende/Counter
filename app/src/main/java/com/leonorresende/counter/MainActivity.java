@@ -22,6 +22,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -74,6 +75,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+    @Override
+    public void onRestart() {
+        super.onRestart();
+        //When BACK BUTTON is pressed, the activity on the stack is restarted
+        //Do what you want on the refresh procedure here
+        loadCounters();
+    }
+
     private void loadCounters() {
 
         Cursor c = myDatabase.rawQuery("SELECT * FROM countersData", null);
@@ -121,6 +130,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View view) {
         if (view.getId() == R.id.fab) {
             final EditText titleInput = new EditText(MainActivity.this);
+            titleInput.setOnKeyListener(new View.OnKeyListener() {
+                @Override
+                public boolean onKey(View view, int i, KeyEvent keyEvent) {
+                    if (keyEvent.getAction() == KeyEvent.ACTION_DOWN && keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+                        String newTitle = titleInput.getText().toString();
+                        if (newTitle != null && !newTitle.equals("")) {
+                            makeNewCounter(newTitle, 0);
+                            goToCounter(newTitle, 0);
+                        }
+                        return true;
+                    }
+                    return false;
+                }
+            });
+
             TextInputLayout textInputLayout = new TextInputLayout(MainActivity.this);
 
             FrameLayout container = new FrameLayout(MainActivity.this);
@@ -146,9 +170,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-                            makeNewCounter(titleInput.getText().toString(), 0);
-                            goToCounter(titleInput.getText().toString(), 0);
-
+                            String newTitle = titleInput.getText().toString();
+                            if (newTitle != null && !newTitle.equals("")) {
+                                makeNewCounter(newTitle, 0);
+                                goToCounter(newTitle, 0);
+                            }
                         }
                     })
                     .setNegativeButton("Cancel", null)
@@ -160,5 +186,4 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, resources.getDisplayMetrics());
         return (int) px;
     }
-
 }

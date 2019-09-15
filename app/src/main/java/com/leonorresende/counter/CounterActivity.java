@@ -14,6 +14,7 @@ import android.database.sqlite.SQLiteStatement;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,6 +22,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -123,8 +125,10 @@ public class CounterActivity extends AppCompatActivity {
 
     private void editTitle() {
         final EditText titleInput = new EditText(CounterActivity.this);
+        titleInput.setSingleLine();
+
         titleInput.setText(title);
-        TextInputLayout textInputLayout = new TextInputLayout(CounterActivity.this);
+        final TextInputLayout textInputLayout = new TextInputLayout(CounterActivity.this);
 
         FrameLayout container = new FrameLayout(CounterActivity.this);
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -140,6 +144,18 @@ public class CounterActivity extends AppCompatActivity {
         textInputLayout.addView(titleInput);
         container.addView(textInputLayout);
 
+        titleInput.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View view, int i, KeyEvent keyEvent) {
+                if (keyEvent.getAction() == KeyEvent.ACTION_DOWN && keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+                    String newTitle = titleInput.getText().toString();
+                    updateTitle(newTitle);
+                    return true;
+                }
+                return false;
+            }
+        });
+
 
 
         new AlertDialog.Builder(this)
@@ -149,20 +165,29 @@ public class CounterActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         String newTitle = titleInput.getText().toString();
-
-                        String sqlStatement = "UPDATE countersData SET title = ? WHERE title = ? AND number = ?";
-                        SQLiteStatement statement = myDatabase.compileStatement(sqlStatement);
-                        statement.bindString(1, newTitle);
-                        statement.bindString(2, title);
-                        statement.bindLong(3, number);
-                        statement.execute();
-
-                        title = newTitle;
-                        counterTitleTextView.setText(title);
+                        updateTitle(newTitle);
                     }
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
+    }
+
+    private void updateTitle(String newTitle) {
+        if (newTitle != null && !newTitle.equals("")) {
+            String sqlStatement = "UPDATE countersData SET title = ? WHERE title = ? AND number = ?";
+            SQLiteStatement statement = myDatabase.compileStatement(sqlStatement);
+            statement.bindString(1, newTitle);
+            statement.bindString(2, title);
+            statement.bindLong(3, number);
+            statement.execute();
+
+            title = newTitle;
+            counterTitleTextView.setText(title);
+        }
+        else {
+            Toast.makeText(CounterActivity.this, "Couldn't save your title", Toast.LENGTH_LONG).show();
+        }
+
     }
 
     public static int dpToPx(float dp, Resources resources) {
